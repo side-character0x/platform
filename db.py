@@ -1,0 +1,19 @@
+import sqlite3
+
+class Database:
+    def __init__(self):
+        self.conn=sqlite3.connect("platform.db")
+        self.conn.row_factory=sqlite3.Row
+        self.cur=self.conn.cursor()
+        self.cur.execute("CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY, name TEXT, message TEXT)")
+
+    def add_message(self,name, message):
+        self.cur.execute("INSERT INTO messages(name,message) VALUES(?,?)",(name,message))
+        self.conn.commit()
+        self.conn.close()
+
+    def get_messages(self):
+        messages=self.cur.execute("SELECT * FROM messages ").fetchall()
+        messages=[[message["name"],message["message"]] for message in messages]
+        self.conn.close()
+        return messages

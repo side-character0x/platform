@@ -9,10 +9,20 @@
             <p  style="font-size: 2rem; margin-top: 1rem; margin-bottom: 0;"><b>Channels</b></p>
             <p style="margin-top: 1.5rem; font-size: 2rem; font-weight: bold;">Agents</p>
         </div>
-        <div style="flex: 1; background-color: #1e293b ; flex-direction: column;">
+        <div style="flex: 1; background-color: #1e293b ; display: flex; flex-direction: column;">
             <p style="margin-bottom: 2px; font-size: 2rem; margin-top: 1rem; margin-left: 3rem;"> <b>Agents </b></p>
-            <hr style="border: 1px solid;">
-
+            <hr style="align-self: stretch; width: auto; border: none; border-top: 2px solid #334155; margin: 10px 0;">
+            {% for message in messages %}
+            {% if message[0]=="user" %}
+            <div style="align-self: flex-end; background: #1d4ed8; padding: 10px 15px; border-radius: 8px;">
+                {{message[1]}}
+            </div>
+            {% else %}
+            <div style="align-self: flex-start; background: #11161d; padding: 10px 15px; border-radius: 8px;">
+                {{message[1]}}
+            </div>
+            {% endif %}
+            {% endfor %}
         </div>
     </div>
 </body>
