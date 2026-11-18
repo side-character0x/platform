@@ -6,6 +6,7 @@ class Database:
         self.conn.row_factory=sqlite3.Row
         self.cur=self.conn.cursor()
         self.cur.execute("CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY, name TEXT, message TEXT)")
+        self.cur.execute("CREATE TABLE IF NOT EXISTS tasks(pendings TEXT)")
 
     def add_message(self,name, message):
         self.cur.execute("INSERT INTO messages(name,message) VALUES(?,?)",(name,message))
@@ -17,3 +18,13 @@ class Database:
         messages=[[message["name"],message["message"]] for message in messages]
         self.conn.close()
         return messages
+
+    def add_task(self,task):
+        self.cur.execute("INSERT INTO tasks(pendings) VALUES(?)",(task,))
+        self.conn.commit()
+        self.conn.close()
+
+    def remove_task(self,task):
+        self.cur.execute("DELETE FROM tasks WHERE pendings=?",(task,))
+        self.conn.commit()
+        self.conn.close()
