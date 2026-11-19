@@ -3,16 +3,24 @@
 {% block title %}Tasks{% endblock %}
 
 {% block content %}
-<div style="background-color: #1e293b; color: #f8fafc; overflow-y: auto;flex: 1;">
-    <div style=" margin: 1rem 2rem;">
-    {% if tasks %}
-    <p style="font-size: 2rem; margin-bottom: 1rem;">Here are you pending tasks:</p>
-    {% for task in tasks %}
-    <p style="font-size: 1.5rem;">{{loop.index}}. {{task}} </p>
-    {% endfor %}
-    {% else %}
-    <p style="font-size: 2rem; margin-top: 30%; text-align: center;">No Tasks Captured yet!</p>
-    {% endif %}
+<form action="/tasks" method="post" style="display: flex; flex: 1;" >
+<div style="background-color: #1e293b; color: #f8fafc; display: flex; overflow-y: auto; flex-direction: column; flex: 1;">
+    <div style="display: flex; margin: 1rem 2rem;  overflow-y: auto; flex: 1;">
+        <div style="display: flex; flex-direction: column;">
+            {% if tasks %}
+            <p style="font-size: 2rem; margin-bottom: 1rem;">Here are your pending tasks:</p>
+            {% for task in tasks %}
+            <p style="font-size: 1.5rem; margin-bottom: 0;">{{loop.index}}. {{task}} <button name="del_task" value="{{task}}"  style="background: transparent; border: none; padding: 0; color: #f8fafc; font-size: 1.5rem; cursor: pointer; line-height: 1;margin-left: 1.5rem;">&times;</button></p>
+            {% endfor %}
+            {% else %}
+            <p style="font-size: 2rem; margin-top: 30%; text-align: center;">No Tasks Captured yet!</p>
+            {% endif %}
+        </div>
+    </div>
+    <div>
+    <input type="text" name="task" placeholder="Add a task...."
+        style="width: 100%; padding: 12px; background: #11161d; border: 1px solid #2b3544; color: white; border-radius: 5px; box-sizing: border-box;">
     </div>
 </div>
+</form>
 {% endblock %}

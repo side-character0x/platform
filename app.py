@@ -53,8 +53,15 @@ def interface():
         return render_template("interface.html", messages=convo_messages, pins=convo_pins)
     return render_template("interface.html", messages=convo_messages)
 
-@app.route("/tasks")
+@app.route("/tasks", methods=["POST","GET"])
 def tasks():
+    if request.method=="POST":
+        del_task=request.form.get("del_task")
+        if del_task:
+            Database().remove_task(del_task)
+        else:
+            task=request.form.get("task")
+            Database().add_task(task)
     pending_tasks=Database().get_task()
     return render_template("tasks.html", tasks=pending_tasks)
 app.run(debug=True)
