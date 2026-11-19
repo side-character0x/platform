@@ -16,11 +16,27 @@ def home():
 def interface():
     message=request.form.get("message")
     response=Model().classify(message)
+    Database().add_message("User", message)
     if response[0]=="yes":
         if response[1]=="add_task":
-            
-    Database().add_message("User", message)
-    messages=Database().get_messages()
-    return render_template("interface.html", messages=messages)
+            Database().add_task(response[2])
+            Database().add_message("Task Manager",f"Successfully added task: {response[2]}")
+        elif response[1]=="show_task":
+            tasks=Database().get_task()
+            bot_response="Here are your tasks\n"
+            for i, task in enumerate(tasks, start=1):
+                bot_response+=f"{i}. {task}\n"
+            Database().add_message("Task Manager",bot_response)
+        elif response[1]=="completion":
+            tribute=random.choice(tributes)
+            tasks=Database().get_task()
+            db_task=Model().task_matcher(tasks,response[2])
+            if db_task[0]=="yes":
+                completed_task=db_task[1]
+                Database().remove_task(completed_task)
+                Database().add_message("Task Manager",f"{completed_task} marked as completed!")
+                Database().add_message("Task Manager",tribute)
+    convo_messages=Database().get_messages()
+    return render_template("interface.html", messages=convo_messages)
 app.run(debug=True)
 

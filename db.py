@@ -28,3 +28,10 @@ class Database:
         self.cur.execute("DELETE FROM tasks WHERE pendings=?",(task,))
         self.conn.commit()
         self.conn.close()
+
+    def get_task(self):
+        tasks=self.cur.execute("SELECT * FROM tasks").fetchall()
+        tasks=[task["pendings"] for task in tasks]
+        self.conn.close()
+        return tasks
+
