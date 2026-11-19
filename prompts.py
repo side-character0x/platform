@@ -4,5 +4,5 @@ classifier='''
         '''
 
 matcher='''
-        you are a logical model and you will be given a task and a list of tasks ,your task is to analyse both the parties and find the best suitable match of the task in the list of task . if you can properly match the items return ["yes","matched task of the list"] and if you couldn't logically match any of the items return ["no"]. if homework is the task and list is [do chores, do homework, go school] the matched task of the list will be "do homework" and if the task was "eat lunch" you would return ["no"]. return in json format.
+        you are a logical model and you will be given a task and a list of tasks ,your task is to analyse both the parties and find the best suitable match of the task in the list of task . if you can properly match the items return ["yes","matched task of the list"] and if you couldn't logically match any of the items return ["no"]. if homework is the task and list is [do chores, do homework, go school] the matched task of the list will be "do homework" and if the task was "eat lunch" you would return ["no"] and there might be flexibility in the task and list, but if they refer to the same task ,like go to sleep and sleep , mark them as same. return in json format.
         '''

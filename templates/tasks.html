@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Tasks{% endblock %}
+
+{% block content %}
+<div style="background-color: #1e293b; color: #f8fafc; overflow-y: auto;flex: 1;">
+    <div style=" margin: 1rem 2rem;">
+    {% if tasks %}
+    <p style="font-size: 2rem; margin-bottom: 1rem;">Here are you pending tasks:</p>
+    {% for task in tasks %}
+    <p style="font-size: 1.5rem;">{{loop.index}}. {{task}} </p>
+    {% endfor %}
+    {% else %}
+    <p style="font-size: 2rem; margin-top: 30%; text-align: center;">No Tasks Captured yet!</p>
+    {% endif %}
+    </div>
+</div>
+{% endblock %}
