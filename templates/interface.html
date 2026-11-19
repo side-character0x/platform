@@ -12,6 +12,13 @@
         <div style="flex: 1; background-color: #1e293b ; display: flex; flex-direction: column;">
             <p style="margin-bottom: 2px; font-size: 2rem; margin-top: 0.5rem; margin-left: 3rem;"> <b>Agents </b></p>
             <hr style="align-self: stretch; width: auto; border: none; border-top: 2px solid #334155; margin: 10px 0;">
+            {% if pins %}
+            {% for pin in pins %}
+            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+                <span>📌 {{pin}} </span>
+            </div>
+            {% endfor %}
+            {% endif %}
             <div style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
                 {% for message in messages %}
                 {% if message[0]=="User" %}
@@ -28,7 +35,6 @@
             <form action="/interface" method="post">
                 <input type="text" name="message" placeholder="Type a message..."
                    style="width: 100%; padding: 12px; background: #11161d; border: 1px solid #2b3544; color: white; border-radius: 5px; box-sizing: border-box;">
-                   <!-- made with ai -->
             </form>
         </div>
     </div>

@@ -7,6 +7,7 @@ class Database:
         self.cur=self.conn.cursor()
         self.cur.execute("CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY, name TEXT, message TEXT)")
         self.cur.execute("CREATE TABLE IF NOT EXISTS tasks(pendings TEXT)")
+        self.cur.execute("CREATE TABLE IF NOT EXISTS pins(highlights TEXT)")
 
     def add_message(self,name, message):
         self.cur.execute("INSERT INTO messages(name,message) VALUES(?,?)",(name,message))
@@ -35,3 +36,18 @@ class Database:
         self.conn.close()
         return tasks
 
+    def add_highlight(self,highlight):
+        self.cur.execute("INSERT INTO pins(highlights) VALUES(?)",(highlight,))
+        self.conn.commit()
+        self.conn.close()
+
+    def remove_highlight(self,highlight):
+        self.cur.execute("DELETE FROM pins WHERE highlights=?",(highlight,))
+        self.conn.commit()
+        self.conn.close()
+
+    def get_highlight(self):
+        highlights=self.cur.execute("SELECT * FROM pins").fetchall()
+        highlights=[highlight["highlights"] for highlight in highlights]
+        self.conn.close()
+        return highlights

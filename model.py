@@ -14,7 +14,6 @@ class Model:
             {"role":"user", "content":message}],
             temperature=0.1,
             max_tokens=1500 )
-        print(json.loads(output.choices[0].message.content))
         return json.loads(output.choices[0].message.content)
 
     def task_matcher(self,tasks, classifer_intent):
@@ -26,5 +25,4 @@ class Model:
                     {"role":"user", "content":user_content}],
                     temperature=0.1,
                     max_tokens=1500 )
-        print(json.loads(output.choices[0].message.content))
         return json.loads(output.choices[0].message.content)

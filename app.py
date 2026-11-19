@@ -9,8 +9,11 @@ app.secret_key="secret"
 
 @app.route("/")
 def home():
-    messgaes=Database().get_messages()
-    return render_template("interface.html", messages=messgaes)
+    convo_messages=Database().get_messages()
+    convo_pins=Database().get_highlight()
+    if convo_pins:
+        return render_template("interface.html", messages=convo_messages, pins=convo_pins)
+    return render_template("interface.html", messages=convo_messages)
 
 @app.route("/interface", methods=["GET", "POST"])
 def interface():
@@ -33,10 +36,24 @@ def interface():
             db_task=Model().task_matcher(tasks,response[2])
             if db_task[0]=="yes":
                 completed_task=db_task[1]
-                Database().remove_task(completed_task)
+                Database().remove_task(completed_task)                                      #need modification
                 Database().add_message("Task Manager",f"{completed_task} marked as completed!")
                 Database().add_message("Task Manager",tribute)
+        elif response[1]=="pin":
+            Database().add_highlight(response[2])
+            Database().add_message("Pins Manager",f"Pinned '{response[2]}'")
+        elif response[1]=="unpin":
+            pins=Database().get_highlight()
+            db_pin=Model().task_matcher(pins,response[2])
+            if db_pin[0]=="yes":
+                unpinned=db_pin[1]
+                Database().remove_highlight(unpinned)                                  #need modification
+                Database().add_message("Pins Manager",f"Removed pin '{unpinned}'")
+
     convo_messages=Database().get_messages()
+    convo_pins=Database().get_highlight()
+    if convo_pins:
+        return render_template("interface.html", messages=convo_messages, pins=convo_pins)
     return render_template("interface.html", messages=convo_messages)
 app.run(debug=True)
 
