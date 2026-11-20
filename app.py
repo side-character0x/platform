@@ -11,6 +11,13 @@ app.secret_key="secret"
 def base():
     return render_template("login.html")
 
+@app.after_request
+def disable_cache(response):
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
 @app.route("/signup", methods=["GET","POST"])
 def signup():
     if request.method=="GET":
@@ -45,24 +52,24 @@ def home():
     session["current_user"]=Database().get_user_id(session["username"])
     return render_template("home.html", users=users)
 
-@app.route("/chat", methods=["GET","POST"])
-def chat():
+@app.route("/receiver", methods=["GET","POST"])
+def receiver():
     receiver=request.form.get("receiver").split("/")
     session["receiver"]=receiver
+    return redirect("/chat")
+
+@app.route("/chat", methods=["GET","POST"])
+def chat():
     current_user=session["current_user"]
-    messages=Database().get_messages(current_user,receiver[0])
+    messages=Database().get_messages(current_user,session["receiver"][0])
     users=Database().get_users()
-    return render_template("chat.html",messages=messages,current_user=current_user, receiver=receiver[1],users=users)
+    return render_template("chat.html",messages=messages,current_user=current_user, receiver=session["receiver"][1],users=users)
 
 @app.route("/chat_message", methods=["GET","POST"])
 def chat_message():
     message=request.form.get("message")
     Database().add_message(session["current_user"],session["receiver"][0],message)
-    receiver=session["receiver"]
-    current_user=session["current_user"]
-    convo_messages=Database().get_messages(current_user,receiver[0])
-    users=Database().get_users()
-    return render_template("chat.html",messages=convo_messages,current_user=current_user, receiver=receiver[1],users=users)
+    return redirect("/chat")
 
 @app.route("/interface", methods=["GET", "POST"])
 def interface():

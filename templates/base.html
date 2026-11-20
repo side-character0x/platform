@@ -9,7 +9,7 @@
             <p  style="font-size: 2rem; margin-top: 1rem; margin-bottom: 0;"><b>Channels</b></p>
             <p style="margin-top: 1.5rem; margin-bottom: 0.3rem; font-size: 1.5rem; font-weight: bold;"><a href="/interface" style="display: block; text-decoration: none; color: white; background-color: #1e293b; border: 1px solid #334155; padding: 8px 12px; border-radius: 8px; font-weight: bold;">Agents</a></p>
 
-            <form action="/chat" method="post" style="width: 100%; margin-bottom: 0; text-align: left;">
+            <form action="/receiver" method="post" style="width: 100%; margin-bottom: 0; text-align: left;">
             {% for user in users %}
             <p style="margin-top: 0; margin-bottom: 0.3rem;"><button name="receiver" value="{{user[0]}}/{{user[1]}}" style="display: block; text-decoration: none; color: white; background-color: #1e293b; border: 1px solid #334155; padding: 8px 12px; border-radius: 8px; font-weight: bold; width: 100%; font-size: 1.5rem; text-align: left;"># {{user[1]}} </button></p>
             {% endfor %}
