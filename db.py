@@ -24,7 +24,8 @@ class Database:
     def get_user_id(self,username):
         id=self.cur.execute("SELECT user_id FROM auth WHERE username=?",(username,)).fetchone()
         self.conn.close()
-        return str(id["user_id"])
+        user_id=str(id["user_id"])
+        return user_id
 
     def username_validity(self,username):
         db_username=self.cur.execute("SELECT * FROM auth WHERE username=?",(username,)).fetchall()
