@@ -20,7 +20,12 @@ class Database:
         users=[[user["user_id"],user["username"]] for user in users]
         self.conn.close()
         return users
-    
+
+    def get_user_id(self,username):
+        id=self.cur.execute("SELECT user_id FROM auth WHERE username=?",(username,)).fetchone()
+        self.conn.close()
+        return str(id["user_id"])
+
     def username_validity(self,username):
         db_username=self.cur.execute("SELECT * FROM auth WHERE username=?",(username,)).fetchall()
         if db_username:
@@ -35,7 +40,7 @@ class Database:
 
     def verify_password(self,username, password):
         db_password=self.cur.execute("SELECT password FROM auth WHERE username=?",(username,)).fetchone()
-        if db_password==password:
+        if db_password["password"]==password:
             return True
         else:
             return False
@@ -45,9 +50,9 @@ class Database:
         self.conn.commit()
         self.conn.close()
 
-    def get_messages(self):
-        messages=self.cur.execute("SELECT * FROM messages ").fetchall()
-        messages=[[message["sender"], message["receiver"], message["message"]] for message in messages]
+    def get_messages(self,party_1,party_2):
+        messages=self.cur.execute("SELECT * FROM messages WHERE (sender=? AND receiver=?) OR (sender=? AND receiver=?)",(party_1,party_2,party_2,party_1)).fetchall()
+        messages=[[message["sender"], message["message"]] for message in messages]
         self.conn.close()
         return messages
 

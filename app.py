@@ -8,7 +8,7 @@ app=Flask(__name__)
 app.secret_key="secret"
 
 @app.route("/")
-def home():
+def base():
     return render_template("login.html")
 
 @app.route("/signup", methods=["GET","POST"])
@@ -39,13 +39,37 @@ def login():
     session["username"]=username
     return redirect("/home")
 
-@
+@app.route("/home")
+def home():
+    users=Database().get_users()
+    session["current_user"]=Database().get_user_id(session["username"])
+    return render_template("home.html", users=users)
+
+@app.route("/chat", methods=["GET","POST"])
+def chat():
+    receiver=request.form.get("receiver").split("/")
+    session["receiver"]=receiver
+    current_user=session["current_user"]
+    messages=Database().get_messages(current_user,receiver[0])
+    users=Database().get_users()
+    return render_template("chat.html",messages=messages,current_user=current_user, receiver=receiver[1],users=users)
+
+@app.route("/chat_message", methods=["GET","POST"])
+def chat_message():
+    message=request.form.get("message")
+    Database().add_message(session["current_user"],session["receiver"][0],message)
+    receiver=session["receiver"]
+    current_user=session["current_user"]
+    convo_messages=Database().get_messages(current_user,receiver[0])
+    users=Database().get_users()
+    return render_template("chat.html",messages=convo_messages,current_user=current_user, receiver=receiver[1],users=users)
+
 @app.route("/interface", methods=["GET", "POST"])
 def interface():
     if request.method=="POST":
         message=request.form.get("message")
         response=Model().classify(message)
-        Database().add_message()
+        Database().add_message(session["current_user"],session["receiver"][0],message)
         if response[0]=="yes":
             if response[1]=="add_task":
                 Database().add_task(response[2])
@@ -75,12 +99,14 @@ def interface():
                     unpinned=db_pin[1]
                     Database().remove_highlight(unpinned)                                  #need modification
                     Database().add_message("Pins Manager",f"Removed pin '{unpinned}'")
-
-    convo_messages=Database().get_messages()
+    agent=1
+    users=Database().get_users()
+    current_user=session["current_user"]
+    convo_messages=Database().get_messages(current_user,agent)
     convo_pins=Database().get_highlight()
     if convo_pins:
-        return render_template("interface.html", messages=convo_messages, pins=convo_pins)
-    return render_template("interface.html", messages=convo_messages)
+        return render_template("interface.html", messages=convo_messages, pins=convo_pins, users=users)
+    return render_template("interface.html", messages=convo_messages, users=users)
 
 @app.route("/tasks", methods=["POST","GET"])
 def tasks():
