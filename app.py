@@ -9,14 +9,43 @@ app.secret_key="secret"
 
 @app.route("/")
 def home():
-    return render_template("home.html")
+    return render_template("login.html")
 
+@app.route("/signup", methods=["GET","POST"])
+def signup():
+    if request.method=="GET":
+        return render_template("signup.html")
+    username=request.form.get("username")
+    valid=Database().username_validity(username)
+    if valid:
+        return render_template("signup.html",error=True)
+    password=request.form.get("password")
+    Database().add_username(username,password)
+    session["username"]=username
+    return redirect("/home")
+
+@app.route("/login", methods=["POST","GET"])
+def login():
+    if request.method=="GET":
+        return render_template("login.html")
+    username=request.form.get("username")
+    valid=Database().username_validity(username)
+    if not valid:
+        return render_template("login.html",error=True)
+    password=request.form.get("password")
+    verify=Database().verify_password(username, password)
+    if not verify:
+        return render_template("login.html",error=True)
+    session["username"]=username
+    return redirect("/home")
+
+@
 @app.route("/interface", methods=["GET", "POST"])
 def interface():
     if request.method=="POST":
         message=request.form.get("message")
         response=Model().classify(message)
-        Database().add_message("User", message)
+        Database().add_message()
         if response[0]=="yes":
             if response[1]=="add_task":
                 Database().add_task(response[2])
