@@ -9,7 +9,7 @@ app.secret_key="secret"
 
 @app.route("/")
 def base():
-    return render_template("login.html")
+    return render_template("landing_page.html")
 
 @app.after_request
 def disable_cache(response):
