@@ -9,6 +9,7 @@ app.secret_key="secret"
 
 @app.route("/")
 def base():
+    Database().create_tables()
     return render_template("landing_page.html")
 
 @app.after_request
@@ -56,14 +57,9 @@ def home():
 def receiver():
     receiver=request.form.get("receiver").split("/")
     session["receiver"]=receiver
-    return redirect("/chat")
-
-@app.route("/chat", methods=["GET","POST"])
-def chat():
-    current_user=session["current_user"]
-    messages=Database().get_messages(current_user,session["receiver"][0])
-    users=Database().get_users()
-    return render_template("chat.html",messages=messages,current_user=current_user, receiver=session["receiver"][1],users=users)
+    if receiver[0]=="1":
+        return redirect("/interface")
+    return chat_interface("chat.html")
 
 @app.route("/chat_message", methods=["GET","POST"])
 def chat_message():
@@ -77,54 +73,59 @@ def interface():
         message=request.form.get("message")
         response=Model().classify(message)
         Database().add_message(session["current_user"],session["receiver"][0],message)
+        print(response)
         if response[0]=="yes":
             if response[1]=="add_task":
-                Database().add_task(response[2])
-                Database().add_message("Task Manager",f"Successfully added task: {response[2]}")
+                Database().add_task(session["current_user"],response[2])
+                Database().add_message("1",session["current_user"],f"Successfully added task: {response[2]}")
             elif response[1]=="show_task":
-                tasks=Database().get_task()
+                tasks=Database().get_task(session["current_user"])
                 bot_response="Here are your tasks\n"
                 for i, task in enumerate(tasks, start=1):
                     bot_response+=f"{i}. {task}\n"
-                Database().add_message("Task Manager",bot_response)
+                Database().add_message("1",session["current_user"],bot_response)
             elif response[1]=="completion":
                 tribute=random.choice(tributes)
-                tasks=Database().get_task()
+                tasks=Database().get_task(session["current_user"])
                 db_task=Model().task_matcher(tasks,response[2])
                 if db_task[0]=="yes":
                     completed_task=db_task[1]
-                    Database().remove_task(completed_task)                                      #need modification
-                    Database().add_message("Task Manager",f"{completed_task} marked as completed!")
-                    Database().add_message("Task Manager",tribute)
+                    Database().remove_task(session["current_user"],completed_task)                                      #need modification
+                    Database().add_message("1",session["current_user"],f"{completed_task} marked as completed!")
+                    Database().add_message("1",session["current_user"],tribute)
             elif response[1]=="pin":
-                Database().add_highlight(response[2])
-                Database().add_message("Pins Manager",f"Pinned '{response[2]}'")
+                Database().add_highlight(session["current_user"],response[2])
+                Database().add_message("1",session["current_user"],f"Pinned '{response[2]}'")
             elif response[1]=="unpin":
-                pins=Database().get_highlight()
+                pins=Database().get_highlight(session["current_user"])
                 db_pin=Model().task_matcher(pins,response[2])
                 if db_pin[0]=="yes":
                     unpinned=db_pin[1]
-                    Database().remove_highlight(unpinned)                                  #need modification
-                    Database().add_message("Pins Manager",f"Removed pin '{unpinned}'")
-    agent=1
-    users=Database().get_users()
-    current_user=session["current_user"]
-    convo_messages=Database().get_messages(current_user,agent)
-    convo_pins=Database().get_highlight()
-    if convo_pins:
-        return render_template("interface.html", messages=convo_messages, pins=convo_pins, users=users)
-    return render_template("interface.html", messages=convo_messages, users=users)
+                    Database().remove_highlight(session["current_user"],unpinned)                                  #need modification
+                    Database().add_message("1",session["current_user"],f"Removed pin '{unpinned}'")
+    return chat_interface("interface.html")
 
 @app.route("/tasks", methods=["POST","GET"])
 def tasks():
     if request.method=="POST":
         del_task=request.form.get("del_task")
         if del_task:
-            Database().remove_task(del_task)
+            Database().remove_task(session["current_user"],del_task)
         else:
             task=request.form.get("task")
-            Database().add_task(task)
-    pending_tasks=Database().get_task()
-    return render_template("tasks.html", tasks=pending_tasks)
+            Database().add_task(session["current_user"],task)
+    pending_tasks=Database().get_task(session["current_user"])
+    users=Database().get_users()
+    return render_template("tasks.html", tasks=pending_tasks,users=users)
+
+def chat_interface(template):
+    users=Database().get_users()
+    current_user=session["current_user"]
+    convo_messages=Database().get_messages(current_user,session["receiver"][0])
+    convo_pins=Database().get_highlight(current_user)
+    if convo_pins:
+        return render_template(template, messages=convo_messages, pins=convo_pins, receiver=session["receiver"][1], users=users, current_user=current_user)
+    return render_template(template, messages=convo_messages, users=users, receiver=session["receiver"][1], current_user=current_user)
+
 app.run(debug=True)
 

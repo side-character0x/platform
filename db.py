@@ -5,15 +5,19 @@ class Database:
         self.conn=sqlite3.connect("platform.db")
         self.conn.row_factory=sqlite3.Row
         self.cur=self.conn.cursor()
+
+    def create_tables(self):
         agents_exists=self.cur.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='auth'").fetchone()
-        self.cur.execute("CREATE TABLE IF NOT EXISTS auth(user_id INTEGER PRIMARY KEY, username TEXT, password INTEGER)")
+        self.cur.execute("CREATE TABLE IF NOT EXISTS auth(user_id INTEGER PRIMARY KEY, username TEXT, password TEXT)")
         if agents_exists is None:
-            agents=["Agent"]
+            agents=["Agents"]
             agents_list=[(agent,None) for agent in agents]
             self.cur.executemany("INSERT INTO auth(username,password) VALUES(?,?)", agents_list)
         self.cur.execute("CREATE TABLE IF NOT EXISTS messages(sender TEXT, receiver TEXT, message TEXT)")
         self.cur.execute("CREATE TABLE IF NOT EXISTS tasks(user TEXT, pendings TEXT)")
         self.cur.execute("CREATE TABLE IF NOT EXISTS pins(user TEXT, highlights TEXT)")
+        self.conn.commit()
+        self.conn.close()
 
     def get_users(self):
         users=self.cur.execute("SELECT * FROM auth WHERE user_id>1").fetchall()
@@ -29,6 +33,7 @@ class Database:
 
     def username_validity(self,username):
         db_username=self.cur.execute("SELECT * FROM auth WHERE username=?",(username,)).fetchall()
+        self.conn.close()
         if db_username:
             return True
         else:
@@ -41,6 +46,8 @@ class Database:
 
     def verify_password(self,username, password):
         db_password=self.cur.execute("SELECT password FROM auth WHERE username=?",(username,)).fetchone()
+        self.conn.close()
+        print(type(db_password["password"]),type(password))
         if db_password["password"]==password:
             return True
         else:
@@ -58,7 +65,7 @@ class Database:
         return messages
 
     def add_task(self,user,task):
-        self.cur.execute("INSERT INTO tasks(user, pendings) VALUES(?)",(user,task))
+        self.cur.execute("INSERT INTO tasks(user, pendings) VALUES(?,?)",(user,task))
         self.conn.commit()
         self.conn.close()
 
@@ -73,13 +80,13 @@ class Database:
         self.conn.close()
         return tasks
 
-    def add_highlight(self,highlight):
-        self.cur.execute("INSERT INTO pins(highlights) VALUES(?)",(highlight,))
+    def add_highlight(self,user,highlight):
+        self.cur.execute("INSERT INTO pins(user,highlights) VALUES(?,?)",(user,highlight))
         self.conn.commit()
         self.conn.close()
 
-    def remove_highlight(self,highlight):
-        self.cur.execute("DELETE FROM pins WHERE highlights=?",(highlight,))
+    def remove_highlight(self,user,highlight):
+        self.cur.execute("DELETE FROM pins WHERE highlights=? AND user=?",(highlight,user))
         self.conn.commit()
         self.conn.close()
 
