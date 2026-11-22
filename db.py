@@ -13,11 +13,22 @@ class Database:
             agents=["Agents","Herald"]
             agents_list=[(agent,None) for agent in agents]
             self.cur.executemany("INSERT INTO auth(username,password) VALUES(?,?)", agents_list)
-        self.cur.execute("CREATE TABLE IF NOT EXISTS messages(sender TEXT, receiver TEXT, message TEXT)")
+        self.cur.execute("CREATE TABLE IF NOT EXISTS messages(convo_id TEXT, sender TEXT, receiver TEXT, message TEXT)")
         self.cur.execute("CREATE TABLE IF NOT EXISTS tasks(user TEXT, pendings TEXT)")
         self.cur.execute("CREATE TABLE IF NOT EXISTS pins(user TEXT, highlights TEXT)")
+        self.cur.execute("CREATE TABLE IF NOT EXISTS convo_id(id INTEGER PRIMARY KEY, user_1 TEXT, user_2 TEXT)")
         self.conn.commit()
         self.conn.close()
+
+    def get_convo_id(self,party_1,party_2):
+        row=self.cur.execute("SELECT * FROM convo_id WHERE (user_1=? AND user_2=?) OR (user_1=? AND user_2=?)",(party_1,party_2,party_2,party_1)).fetchone()
+        if row:
+            self.conn.close()
+            return row["id"]
+        else:
+            self.cur.execute("INSERT INTO convo_id(user_1,user_2) VALUES(?,?)",(party_1,party_2))
+            self.conn.close()
+            return self.cur.lastrowid
 
     def get_users(self):
         users=self.cur.execute("SELECT * FROM auth WHERE user_id>2").fetchall()
@@ -53,13 +64,13 @@ class Database:
         else:
             return False
 
-    def add_message(self,sender, receiver, message):
-        self.cur.execute("INSERT INTO messages(sender, receiver, message) VALUES(?,?,?)",(sender, receiver, message))
+    def add_message(self,convo_id, sender, receiver, message):
+        self.cur.execute("INSERT INTO messages(convo_id,sender, receiver, message) VALUES(?,?,?,?)",(convo_id,sender, receiver, message))
         self.conn.commit()
         self.conn.close()
 
-    def get_messages(self,party_1,party_2):
-        messages=self.cur.execute("SELECT * FROM messages WHERE (sender=? AND receiver=?) OR (sender=? AND receiver=?) OR (sender=? AND receiver=?)",(party_1,party_2,party_2,party_1,"2",party_1)).fetchall()
+    def get_messages(self,convo_id):
+        messages=self.cur.execute("SELECT * FROM messages WHERE convo_id=?",(convo_id,)).fetchall()
         messages=[[message["sender"], message["message"], message["receiver"]] for message in messages]
         self.conn.close()
         return messages
@@ -95,3 +106,5 @@ class Database:
         highlights=[highlight["highlights"] for highlight in highlights]
         self.conn.close()
         return highlights
+
+

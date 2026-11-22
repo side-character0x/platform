@@ -56,6 +56,7 @@ def home():
 @app.route("/receiver", methods=["GET","POST"])
 def receiver():
     receiver=request.form.get("receiver").split("/")
+    session["convo_id"]=Database().get_convo_id(session["current_user"],receiver[0])
     session["receiver"]=receiver
     if receiver[0]=="1":
         return redirect("/interface")
@@ -64,7 +65,7 @@ def receiver():
 @app.route("/chat_message", methods=["GET","POST"])
 def chat_message():
     message=request.form.get("message")
-    Database().add_message(session["current_user"],session["receiver"][0],message)
+    Database().add_message(session["convo_id"],session["current_user"],session["receiver"][0],message)
     return chat_interface("chat.html")
 
 @app.route("/interface", methods=["GET", "POST"])
@@ -76,13 +77,13 @@ def interface():
         if response[0]=="yes":
             if response[1]=="add_task":
                 Database().add_task(session["current_user"],response[2])
-                Database().add_message("1",session["current_user"],f"Successfully added task: {response[2]}")
+                Database().add_message(session["convo_id"],"1",session["current_user"],f"Successfully added task: {response[2]}")
             elif response[1]=="show_task":
                 tasks=Database().get_task(session["current_user"])
                 bot_response="Here are your tasks\n"
                 for i, task in enumerate(tasks, start=1):
                     bot_response+=f"{i}. {task}\n"
-                Database().add_message("1",session["current_user"],bot_response)
+                Database().add_message(session["convo_id"],"1",session["current_user"],bot_response)
             elif response[1]=="completion":
                 tribute=random.choice(tributes)
                 tasks=Database().get_task(session["current_user"])
@@ -90,18 +91,18 @@ def interface():
                 if db_task[0]=="yes":
                     completed_task=db_task[1]
                     Database().remove_task(session["current_user"],completed_task)                                      #need modification
-                    Database().add_message("1",session["current_user"],f"{completed_task} marked as completed!")
-                    Database().add_message("1",session["current_user"],tribute)
+                    Database().add_message(session["convo_id"],"1",session["current_user"],f"{completed_task} marked as completed!")
+                    Database().add_message(session["convo_id"],"1",session["current_user"],tribute)
             elif response[1]=="pin":
                 Database().add_highlight(session["current_user"],response[2])
-                Database().add_message("1",session["current_user"],f"Pinned '{response[2]}'")
+                Database().add_message(session["convo_id"],"1",session["current_user"],f"Pinned '{response[2]}'")
             elif response[1]=="unpin":
                 pins=Database().get_highlight(session["current_user"])
                 db_pin=Model().task_matcher(pins,response[2])
                 if db_pin[0]=="yes":
                     unpinned=db_pin[1]
                     Database().remove_highlight(session["current_user"],unpinned)                                  #need modification
-                    Database().add_message("1",session["current_user"],f"Removed pin '{unpinned}'")
+                    Database().add_message(session["convo_id"],"1",session["current_user"],f"Removed pin '{unpinned}'")
     return chat_interface("interface.html")
 
 @app.route("/tasks", methods=["POST","GET"])
@@ -120,25 +121,27 @@ def tasks():
 def chat_interface(template):
     users=Database().get_users()
     current_user=session["current_user"]
-    convo_messages=Database().get_messages(current_user,session["receiver"][0])
-    message_count=0
-    for sender,_,receiver in convo_messages:
-        if sender=="2" and receiver==current_user:
-            break
-        if sender==current_user:
-            message_count+=1
-            if message_count>1:
-                break
-    if message_count==1:
-        tribute=random.choice(first_message)
-        Database().add_message("2",current_user,tribute)
-        convo_messages.append(["2",tribute])
+    convo_messages=Database().get_messages(session["convo_id"])
+    first_message_check(convo_messages,current_user)
     convo_pins=Database().get_highlight(current_user)
     if convo_pins:
         return render_template(template, messages=convo_messages, pins=convo_pins, receiver=session["receiver"][1], users=users, current_user=current_user)
     return render_template(template, messages=convo_messages, users=users, receiver=session["receiver"][1], current_user=current_user)
 
-def fist_message_check(convo_message,current_user):
+def first_message_check(convo_messages,current_user):
+    message_count=0
+    for sender,_,receiver in convo_messages:
+        if sender=="2" and receiver==current_user:
+            return
+        if sender==current_user:
+            message_count+=1
+            if message_count>1:
+                return
+    if message_count==1:
+        tribute=random.choice(first_message)
+        Database().add_message(session["convo_id"],"2",current_user,tribute)
+        convo_messages.append(["2",tribute])
+    return
 
 app.run(debug=True)
 
