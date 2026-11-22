@@ -1,7 +1,7 @@
 from flask import Flask, request, redirect, render_template, session
 from db import Database
 from model import Model
-from data import tributes
+from data import tributes, first_message
 import random
 
 app=Flask(__name__)
@@ -65,7 +65,7 @@ def receiver():
 def chat_message():
     message=request.form.get("message")
     Database().add_message(session["current_user"],session["receiver"][0],message)
-    return redirect("/chat")
+    return chat_interface("chat.html")
 
 @app.route("/interface", methods=["GET", "POST"])
 def interface():
@@ -73,7 +73,6 @@ def interface():
         message=request.form.get("message")
         response=Model().classify(message)
         Database().add_message(session["current_user"],session["receiver"][0],message)
-        print(response)
         if response[0]=="yes":
             if response[1]=="add_task":
                 Database().add_task(session["current_user"],response[2])
@@ -122,10 +121,24 @@ def chat_interface(template):
     users=Database().get_users()
     current_user=session["current_user"]
     convo_messages=Database().get_messages(current_user,session["receiver"][0])
+    message_count=0
+    for sender,_,receiver in convo_messages:
+        if sender=="2" and receiver==current_user:
+            break
+        if sender==current_user:
+            message_count+=1
+            if message_count>1:
+                break
+    if message_count==1:
+        tribute=random.choice(first_message)
+        Database().add_message("2",current_user,tribute)
+        convo_messages.append(["2",tribute])
     convo_pins=Database().get_highlight(current_user)
     if convo_pins:
         return render_template(template, messages=convo_messages, pins=convo_pins, receiver=session["receiver"][1], users=users, current_user=current_user)
     return render_template(template, messages=convo_messages, users=users, receiver=session["receiver"][1], current_user=current_user)
+
+def fist_message_check(convo_message,current_user):
 
 app.run(debug=True)
 

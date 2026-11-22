@@ -10,7 +10,7 @@ class Database:
         agents_exists=self.cur.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='auth'").fetchone()
         self.cur.execute("CREATE TABLE IF NOT EXISTS auth(user_id INTEGER PRIMARY KEY, username TEXT, password TEXT)")
         if agents_exists is None:
-            agents=["Agents"]
+            agents=["Agents","Herald"]
             agents_list=[(agent,None) for agent in agents]
             self.cur.executemany("INSERT INTO auth(username,password) VALUES(?,?)", agents_list)
         self.cur.execute("CREATE TABLE IF NOT EXISTS messages(sender TEXT, receiver TEXT, message TEXT)")
@@ -20,7 +20,7 @@ class Database:
         self.conn.close()
 
     def get_users(self):
-        users=self.cur.execute("SELECT * FROM auth WHERE user_id>1").fetchall()
+        users=self.cur.execute("SELECT * FROM auth WHERE user_id>2").fetchall()
         users=[[user["user_id"],user["username"]] for user in users]
         self.conn.close()
         return users
@@ -59,8 +59,8 @@ class Database:
         self.conn.close()
 
     def get_messages(self,party_1,party_2):
-        messages=self.cur.execute("SELECT * FROM messages WHERE (sender=? AND receiver=?) OR (sender=? AND receiver=?)",(party_1,party_2,party_2,party_1)).fetchall()
-        messages=[[message["sender"], message["message"]] for message in messages]
+        messages=self.cur.execute("SELECT * FROM messages WHERE (sender=? AND receiver=?) OR (sender=? AND receiver=?) OR (sender=? AND receiver=?)",(party_1,party_2,party_2,party_1,"2",party_1)).fetchall()
+        messages=[[message["sender"], message["message"], message["receiver"]] for message in messages]
         self.conn.close()
         return messages
 
