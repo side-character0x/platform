@@ -24,10 +24,14 @@ class Database:
         row=self.cur.execute("SELECT * FROM convo_id WHERE (user_1=? AND user_2=?) OR (user_1=? AND user_2=?)",(party_1,party_2,party_2,party_1)).fetchone()
         if row:
             self.conn.close()
+            print(row["id"])
             return row["id"]
         else:
             self.cur.execute("INSERT INTO convo_id(user_1,user_2) VALUES(?,?)",(party_1,party_2))
+            self.conn.commit()
             self.conn.close()
+            print(self.cur.lastrowid)
+            print(self.cur.lastrowid)
             return self.cur.lastrowid
 
     def get_users(self):
@@ -58,7 +62,6 @@ class Database:
     def verify_password(self,username, password):
         db_password=self.cur.execute("SELECT password FROM auth WHERE username=?",(username,)).fetchone()
         self.conn.close()
-        print(type(db_password["password"]),type(password))
         if db_password["password"]==password:
             return True
         else:
