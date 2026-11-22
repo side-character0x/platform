@@ -86,7 +86,7 @@ def interface():
     if request.method=="POST":
         message=request.form.get("message")
         response=Model().classify(message)
-        Database().add_message(session["current_user"],session["receiver"][0],message)
+        Database().add_message(session["convo_id"],session["current_user"],session["receiver"][0],message)
         if response[0]=="yes":
             if response[1]=="add_task":
                 Database().add_task(session["current_user"],response[2])
@@ -162,5 +162,5 @@ def open_browser():
 
 if __name__ == "__main__":
     threading.Thread(target=open_browser, daemon=True).start()
-    app.run()
+    app.run(debug=True)
 

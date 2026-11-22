@@ -1,0 +1,10 @@
+some messages in agents chat:
+
+- pin study English
+- unpin study English or unpin English
+- add task go to school
+- remove task school
+- show all tasks
+
+these are only examples , you can try more, but currently this app only supports; tasks,and pins
+

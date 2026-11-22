@@ -27,6 +27,7 @@
 - Need to refresh the page for getting the latest messages.
 - Requires Internet connection.
 - Can't run 2 accounts in same browser cookies.
+- App can crash if the API response has a problem.
 
 ## Test
 
