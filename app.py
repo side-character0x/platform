@@ -3,8 +3,21 @@ from db import Database
 from model import Model
 from data import tributes, first_message
 import random
+import sys
+import os
+import threading
+import time
+import webbrowser
 
-app=Flask(__name__)
+if getattr(sys, 'frozen', False):
+    BASE_DIR = sys._MEIPASS
+    template_folder = os.path.join(BASE_DIR, 'templates')
+    app = Flask(__name__, template_folder=template_folder)
+else:
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+    app = Flask(__name__)
+
+os.chdir(BASE_DIR)
 app.secret_key="secret"
 
 @app.route("/")
@@ -143,5 +156,11 @@ def first_message_check(convo_messages,current_user):
         convo_messages.append(["2",tribute])
     return
 
-app.run(debug=True)
+def open_browser():
+    time.sleep(1)
+    webbrowser.open("http://127.0.0.1:5000")
+
+if __name__ == "__main__":
+    threading.Thread(target=open_browser, daemon=True).start()
+    app.run()
 
